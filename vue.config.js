@@ -16,11 +16,8 @@ module.exports = {
         open: true,
         proxy: {
             '/api': {
-                target: 'https://suggest.taobao.com', //设置你调用的接口域名
-                changeOrigin: true,
-                pathRewrite: {
-                    '^/api': '/'
-                }
+                target: 'http://39.97.33.178/', //设置你调用的接口域名
+                changeOrigin: true
             }
         }
     }
