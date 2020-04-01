@@ -4,80 +4,23 @@
         <div class="city_hot">
             <h2>热门城市</h2>
             <ul class="clearfix">
-                <li>上海</li>
-                <li>北京</li>
-                <li>上海</li>
-                <li>北京</li>
-                <li>上海</li>
-                <li>北京</li>
-                <li>上海</li>
-                <li>北京</li>
+                <li v-for="(item,i) in hotList" :key="i">{{item.nm}}</li>
             </ul>
         </div>
-        <div class="city_sort">
-            <div>
-                <h2>A</h2>
-                <ul>
-                    <li>阿拉善盟</li>
-                    <li>鞍山</li>
-                    <li>安庆</li>
-                    <li>安阳</li>
-                </ul>
-            </div>
-            <div>
-                <h2>B</h2>
-                <ul>
-                    <li>北京</li>
-                    <li>保定</li>
-                    <li>蚌埠</li>
-                    <li>包头</li>
-                </ul>
-            </div>
-            <div>
-                <h2>A</h2>
-                <ul>
-                    <li>阿拉善盟</li>
-                    <li>鞍山</li>
-                    <li>安庆</li>
-                    <li>安阳</li>
-                </ul>
-            </div>
-            <div>
-                <h2>B</h2>
-                <ul>
-                    <li>北京</li>
-                    <li>保定</li>
-                    <li>蚌埠</li>
-                    <li>包头</li>
-                </ul>
-            </div>
-            <div>
-                <h2>A</h2>
-                <ul>
-                    <li>阿拉善盟</li>
-                    <li>鞍山</li>
-                    <li>安庆</li>
-                    <li>安阳</li>
-                </ul>
-            </div>
-            <div>
-                <h2>B</h2>
-                <ul>
-                    <li>北京</li>
-                    <li>保定</li>
-                    <li>蚌埠</li>
-                    <li>包头</li>
+        <div class="city_sort" ref="city_sort">
+            <div v-for="(item ,i) in cityList" :key="i">
+                <h2>{{item.index}}</h2>
+                <ul v-for="(items,c) in cityList[i].list" :key="c">
+                    <li>{{items.nm}}</li>
                 </ul>
             </div>	
         </div>
     </div>
     <div class="city_index">
         <ul>
-            <li>A</li>
-            <li>B</li>
-            <li>C</li>
-            <li>D</li>
-            <li>E</li>
+            <li v-for="(item,index) in cityList" :key="item.id" @touchstart="handleToIndex(index)">
+                {{item.index}}
+            </li>
         </ul>
     </div>
 </div>
@@ -88,17 +31,82 @@ export default {
 name:"City",
   data() {
     return {
-
+        cityList:[],
+        hotList:[]
     }
   },
-  components: {
+  mounted(){
+      this.axios.get('/api/cityList').then(res=>{
+          console.log(res)
+          if (res.data.msg === 'ok') {
+              var cites = res.data.data.cities;
+            //   {index:"A",list:[{nm:"阿成"，id:1}]}
+              var {cityList,hotList} = this.formateCityList(cites)
+              this.cityList = cityList;
+              this.hotList = hotList;
+          }
+      })
+  },
+  methods:{
+      formateCityList(cites){
+          var cityList = [];
+          var hotList = [];
 
+        for (let i = 0; i < cites.length; i++) {
+            if (cites[i].isHot == 1){
+                hotList.push(cites[i])
+            }
+            
+        }
+
+
+          for (let i = 0; i < cites.length; i++) {
+              var firstLetter =cites[i].py.substring(0,1).toUpperCase();
+              if(toCom(firstLetter)){
+                   cityList.push({index:firstLetter,list:[{nm:cites[i].nm,id:cites[i].ed}]})
+              }else{
+                  for (let j = 0; j < cityList.length; j++) {
+                      if (firstLetter === cityList[j].index) {
+                       cityList[j].list.push({nm:cites[i].nm,id:cites[i].ed})
+                      }
+                  }
+              }
+          }
+
+            cityList.sort((n1,n2)=>{
+                if (n1.index>n2.index) {
+                    return 1;
+                }else if (n1.index<n2.index) {
+                    return -1;
+                }else{
+                    return 0;
+                }
+
+            })
+
+
+          function toCom(firstLetter){
+            for (let i = 0; i < cityList.length; i++) {
+                if (firstLetter === cityList[i].index) {
+                    return false
+                }
+            }
+           return true
+          }
+          return {
+              cityList,hotList
+          }
+      },
+      handleToIndex(i){
+              var h2 = this.$refs.city_sort.getElementsByTagName("h2");
+              this.$refs.city_sort.parentNode.scrollTop = h2[i].offsetTop;
+      }
   }
 }
 </script>
 
 <style scoped>
-.city_body{ margin-top: 45px; display: flex; width:100%; position: absolute; top: 0; bottom: 0;}
+.city_body{ margin-top: 45px;display: flex; width:100%; position: absolute; top: 0; bottom: 0;}
 .city_body .city_list{ flex:1; overflow: auto; background: #FFF5F0;}
 .city_body .city_list::-webkit-scrollbar{
     background-color:transparent;
