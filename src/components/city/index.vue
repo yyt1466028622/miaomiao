@@ -1,27 +1,69 @@
 <template>
-  <div class="city_body">
-    <div class="city_list">
-        <div class="city_hot">
-            <h2>热门城市</h2>
-            <ul class="clearfix">
-                <li v-for="(item,i) in hotList" :key="i">{{item.nm}}</li>
+
+<div >
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+    <div>11111222222222222222222</div>
+
+    <div class="city_body">
+         <Loading v-if="isLoading"/>
+        <div v-else class="city_list">
+            <Scroller ref="city_list">
+            <div>
+                <div class="city_hot">
+                    <h2>热门城市</h2>
+                    <ul class="clearfix">
+                        <li v-for="item in hotList" :key="item.id" @tap="handleToCity(item.nm,item.id)">{{item.nm}}</li>
+                    </ul>
+                </div>
+                <div class="city_sort" ref="city_sort">
+                    <div v-for="(item ,i) in cityList" :key="i">
+                        <h2>{{item.index}}</h2>
+                        <ul>
+                            <li v-for="items in cityList[i].list" :key="items.id" @tap="handleToCity(items.nm,items.id)">{{items.nm}}</li>
+                        </ul>
+                    </div>	
+                </div>
+            </div>
+            </Scroller>
+        </div>
+        <div class="city_index">
+            <ul>
+                <li v-for="(item,index) in cityList" :key="item.id" @touchstart="handleToIndex(index)">
+                    {{item.index}}
+                </li>
             </ul>
         </div>
-        <div class="city_sort" ref="city_sort">
-            <div v-for="(item ,i) in cityList" :key="i">
-                <h2>{{item.index}}</h2>
-                <ul v-for="(items,c) in cityList[i].list" :key="c">
-                    <li>{{items.nm}}</li>
-                </ul>
-            </div>	
-        </div>
-    </div>
-    <div class="city_index">
-        <ul>
-            <li v-for="(item,index) in cityList" :key="item.id" @touchstart="handleToIndex(index)">
-                {{item.index}}
-            </li>
-        </ul>
     </div>
 </div>
 </template>
@@ -32,34 +74,45 @@ name:"City",
   data() {
     return {
         cityList:[],
-        hotList:[]
+        hotList:[],
+        isLoading:true
     }
   },
   mounted(){
-      this.axios.get('/api/cityList').then(res=>{
+
+      var cityList = window.localStorage.getItem('cityList');
+      var hotList = window.localStorage.getItem('hotList');
+        if (cityList && hotList) {
+            this.cityList = JSON.parse(cityList);
+            this.hotList = JSON.parse(hotList);
+            this.isLoading = false;
+        }else{
+        this.axios.get('/api/cityList').then(res=>{
           console.log(res)
           if (res.data.msg === 'ok') {
               var cites = res.data.data.cities;
+              this.isLoading = false;
             //   {index:"A",list:[{nm:"阿成"，id:1}]}
               var {cityList,hotList} = this.formateCityList(cites)
               this.cityList = cityList;
               this.hotList = hotList;
+              window.localStorage.setItem('cityList',JSON.stringify(cityList))
+               window.localStorage.setItem('hotList',JSON.stringify(hotList))
           }
       })
+        }
+      
   },
   methods:{
       formateCityList(cites){
           var cityList = [];
           var hotList = [];
-
         for (let i = 0; i < cites.length; i++) {
             if (cites[i].isHot == 1){
                 hotList.push(cites[i])
             }
             
         }
-
-
           for (let i = 0; i < cites.length; i++) {
               var firstLetter =cites[i].py.substring(0,1).toUpperCase();
               if(toCom(firstLetter)){
@@ -72,7 +125,6 @@ name:"City",
                   }
               }
           }
-
             cityList.sort((n1,n2)=>{
                 if (n1.index>n2.index) {
                     return 1;
@@ -81,10 +133,7 @@ name:"City",
                 }else{
                     return 0;
                 }
-
             })
-
-
           function toCom(firstLetter){
             for (let i = 0; i < cityList.length; i++) {
                 if (firstLetter === cityList[i].index) {
@@ -99,7 +148,14 @@ name:"City",
       },
       handleToIndex(i){
               var h2 = this.$refs.city_sort.getElementsByTagName("h2");
-              this.$refs.city_sort.parentNode.scrollTop = h2[i].offsetTop;
+            //   this.$refs.city_sort.parentNode.scrollTop = h2[i].offsetTop;
+            this.$refs.city_list.toScrollTop(-h2[i].offsetTop)
+      },
+      handleToCity(nm,id){
+          this.$store.commit('city/CITY_INFO',{nm,id});
+          window.localStorage.setItem('nowNm',nm)
+           window.localStorage.setItem('nowId',id)
+          this.$router.push('/movie/homePlaying')
       }
   }
 }
