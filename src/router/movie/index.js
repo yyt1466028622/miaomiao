@@ -25,6 +25,30 @@ export default {
             path: "homePlaying",
             component: () =>
                 import ('components/homePlaying')
+        },
+        {
+            path: 'detail/1/:movieId',
+            components: {
+                default: () =>
+                    import ('components/homePlaying'),
+                detail: () =>
+                    import ('views/movie/detail')
+            },
+            props: {
+                detail: true
+            }
+        },
+        {
+            path: 'detail/2/:movieId',
+            components: {
+                default: () =>
+                    import ('components/comingSon'),
+                detail: () =>
+                    import ('views/movie/detail')
+            },
+            props: {
+                detail: true
+            }
         }
     ]
 }
