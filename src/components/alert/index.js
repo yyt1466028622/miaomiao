@@ -30,7 +30,6 @@ export var messageBox = (function() {
             },
             methods: {
                 handleCancel() {
-                    console.log(this);
                     defaults.handleCancel && defaults.handleCancel.call(this) //这里是改变this指向问题
                     document.body.removeChild(vm.$el)
                 },
